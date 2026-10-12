@@ -1,0 +1,70 @@
+# HumanAPI: the website, the task service and the payment facilitator.
+#
+#   cp api/env.docker.example api/.env.docker                    then fill it in
+#   cp env.facilitator.example .env.facilitator                      then fill it in
+#   docker compose up --build
+#
+# Website http://localhost:3000   API http://localhost:8400   Facilitator http://localhost:8402
+# Add `--profile localdb` to also run a local Postgres instead of a hosted one.
+
+services:
+  facilitator:
+    image: ${FACILITATOR_IMAGE:-ghcr.io/useh402/facilitator:latest}
+    env_file: ./.env.facilitator
+    environment:
+      HF_HOST: 0.0.0.0
+      HF_PORT: "8402"
+    volumes:
+      - facilitator-data:/data
+    ports:
+      - "127.0.0.1:${FACILITATOR_PORT:-8402}:8402"
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    env_file: ./api/.env.docker
+    environment:
+      HA_HOST: 0.0.0.0
+      HA_PORT: "8400"
+      HA_FACILITATOR_URL: http://facilitator:8402
+      HA_CORS_ORIGINS: ${WEB_ORIGIN:-http://localhost:3000}
+    depends_on:
+      facilitator:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${API_PORT:-8400}:8400"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8400}
+        NEXT_PUBLIC_ROBINHOOD_NETWORK: ${ROBINHOOD_NETWORK:-eip155:4663}
+        NEXT_PUBLIC_PRIVY_APP_ID: ${PRIVY_APP_ID:-}
+        NEXT_PUBLIC_DEV_LOGIN: "0"
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    restart: unless-stopped
+
+  postgres:
+    profiles: ["localdb"]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: humanapi
+      POSTGRES_PASSWORD: humanapi
+      POSTGRES_DB: humanapi
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U humanapi"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  facilitator-data:
+  postgres-data:
