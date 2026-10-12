@@ -12,7 +12,7 @@ dependencies = [
   "alembic>=1.13",
   "httpx>=0.28",
   "eth-account>=0.13",
-  "web3>=7,<8",
+  "web3>=7,<9",
   "solana>=0.36,<0.40",
   "solders>=0.27",
   "base58>=2.1",
@@ -21,8 +21,8 @@ dependencies = [
 [project.optional-dependencies]
 postgres = ["psycopg[binary]>=3.2"]
 redis = ["redis>=5.2"]
-chain = ["web3>=7,<8"]  # settling tasks through the TaskEscrow contract
-demo = ["x402[evm,svm,extensions]==2.25.0", "web3>=7,<8"]
+chain = ["web3>=7,<9"]  # settling tasks through the TaskEscrow contract
+demo = ["x402[evm,svm,extensions]==2.25.0", "web3>=7,<9"]
 dev = ["pytest>=8", "pytest-timeout>=2", "ruff>=0.6"]
 
 [project.scripts]
