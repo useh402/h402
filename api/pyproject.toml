@@ -13,7 +13,7 @@ dependencies = [
   "httpx>=0.28",
   "eth-account>=0.13",
   "web3>=7,<8",
-  "solana>=0.36,<0.40",
+  "solana>=0.36,<0.42",
   "solders>=0.27",
   "base58>=2.1",
 ]
